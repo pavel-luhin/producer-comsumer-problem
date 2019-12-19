@@ -12,26 +12,27 @@ public class Processor {
 
   public static void main(String[] args) throws InterruptedException {
     DefaultDataStore dataStore = new DefaultDataStore(10);
+    Object lock = new Object();
 
     final int consumers = 5;
     final int producers = 5;
 
-    startProducer(dataStore, producers);
+    startProducer(dataStore, producers, lock);
     Thread.sleep(2000);
-    startConsumer(dataStore, consumers);
+    startConsumer(dataStore, consumers, lock);
   }
 
-  private static void startConsumer(ReadOnlyDataStore dataStore, int count) {
+  private static void startConsumer(ReadOnlyDataStore dataStore, int count, Object lock) {
     ExecutorService executorService = Executors.newFixedThreadPool(count);
     for (int i = 0; i < count; i++) {
-      executorService.submit(new Consumer(dataStore));
+      executorService.submit(new Consumer(dataStore, lock));
     }
   }
 
-  private static void startProducer(WriteOnlyDataStore dataStore, int count) {
+  private static void startProducer(WriteOnlyDataStore dataStore, int count, Object lock) {
     ExecutorService executorService = Executors.newFixedThreadPool(count);
     for (int i = 0; i < count; i++) {
-      executorService.submit(new Producer(dataStore));
+      executorService.submit(new Producer(dataStore, lock));
     }
   }
 }

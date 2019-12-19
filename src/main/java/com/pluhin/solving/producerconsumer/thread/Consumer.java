@@ -5,21 +5,23 @@ import com.pluhin.solving.producerconsumer.datastore.ReadOnlyDataStore;
 public class Consumer implements Runnable {
 
   private final ReadOnlyDataStore dataStore;
+  private final Object lock;
 
-  public Consumer(ReadOnlyDataStore dataStore) {
+  public Consumer(ReadOnlyDataStore dataStore, Object lock) {
     this.dataStore = dataStore;
+    this.lock = lock;
   }
 
   @Override
   public void run() {
-    synchronized (dataStore) {
+    synchronized (lock) {
       while (true) {
         try {
           if (dataStore.isEmpty()) {
-            dataStore.wait();
+            lock.wait();
           } else {
             System.out.println(Thread.currentThread().getName() + "[CONSUMER] Retrieve value: " + dataStore.read());
-            dataStore.notify();
+            lock.notify();
           }
           Thread.sleep(500);
         } catch (InterruptedException ex) {
